@@ -16,14 +16,23 @@ import click
 @click.option('-P', '--password', required=True, prompt=True, hide_input=True,
               confirmation_prompt=True, help='DB user password')
 @click.option('-d', '--database', required=True, help='DB to reflect')
-def reflect():
-    pass
+@click.pass_context
+def reflect(ctx, host, port, user, password, database, sql_driver):
+    ctx.obj = {
+        'host': host,
+        'port': port,
+        'user': user,
+        'password': password,
+        'database': database,
+        'sql-driver': sql_driver,
+    }
 
 
 @reflect.command()
-def inspect(**kwargs):
+@click.pass_obj
+def inspect(config, **kwargs):
     """run reflection on target schema"""
-    pass
+    print(config)
 
 
 @reflect.command()
@@ -40,7 +49,7 @@ def implement(**kwargs):
 
 
 @reflect.command()
-def run(**kwards):
+def run(**kwargs):
     """inspect, emit, implement"""
     pass
 
