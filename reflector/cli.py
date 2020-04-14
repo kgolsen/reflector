@@ -9,7 +9,7 @@ import click
 
 
 @click.group()
-@click.option('--sql-driver', help='SQL driver to use for connections (currently only psycopg2)')
+@click.option('--sql-driver', help='SQL driver to use for connections (currently only Postgres)')
 @click.option('-a', '--host', required=True, help='DB hostname')
 @click.option('-p', '--port', required=True, type=int, help='DB listener port')
 @click.option('-u', '--user', required=True, help='username to connect as')
