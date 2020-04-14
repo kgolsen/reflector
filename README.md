@@ -1,3 +1,3 @@
 # reflector
 
-Generate OpenAPI specs from SQL DBs.
+Generate OpenAPI specs and basic CRUD REST APIs from SQL DBs.
