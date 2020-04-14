@@ -43,6 +43,7 @@ def emit(**kwargs):
 
 
 @reflect.command()
+@click.pass_obj
 def implement(**kwargs):
     """build REST API"""
     pass
