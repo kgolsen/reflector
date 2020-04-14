@@ -1,19 +1,18 @@
 import pickle
 from urllib.parse import quote
 
-from sqlalchemy import *
+from sqlalchemy import create_engine, inspect, Table, MetaData
 
 
 class Reflector:
 
-    def __init__(self, config):
-        assert {'host', 'port', 'user', 'password', 'database', 'sql-driver'} <= config.keys()
-        self.host = config['host']
-        self.port = config['port']
-        self.user = config['user']
-        self.password = quote(config['password'], safe='')
-        self.database = config['database']
-        self.sql_driver = config['sql-driver']
+    def __init__(self, *, sql_driver, host, port, user, password, database):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = quote(password, safe='')
+        self.database = database
+        self.sql_driver = sql_driver
         self.connection_string = f"{self.sql_driver}://" \
                                  f"{self.user}:{self.password}" \
                                  f"@{self.host}:{self.port}/" \
@@ -47,9 +46,15 @@ class Reflector:
             return obj
 
     def reflect(self):
+        m = MetaData()
         for tbl in self.meta.get_table_names():
             self.tables[tbl] = {
                 'columns': self.meta.get_columns(tbl),
                 'primary_key': self.meta.get_pk_constraint(tbl),
                 'foreign_keys': self.meta.get_foreign_keys(tbl),
+            }
+        for view in self.meta.get_view_names():
+            v = Table(view, m, autoload=True, autoload_with=self.sql)
+            self.views[view] = {
+                'columns': [{'name': c.name, 'type': c.type} for c in v.columns]
             }

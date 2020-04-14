@@ -7,6 +7,8 @@ relations.
 
 import click
 
+from db import Reflector
+
 
 @click.group()
 @click.option('--sql-driver', help='SQL driver to use for connections (currently only Postgres)')
@@ -18,21 +20,31 @@ import click
 @click.option('-d', '--database', required=True, help='DB to reflect')
 @click.pass_context
 def reflect(ctx, host, port, user, password, database, sql_driver):
+    if sql_driver is None:
+        sql_driver = 'postgres'
     ctx.obj = {
         'host': host,
         'port': port,
         'user': user,
         'password': password,
         'database': database,
-        'sql-driver': sql_driver,
+        'sql_driver': sql_driver,
     }
 
 
 @reflect.command()
 @click.pass_obj
-def inspect(config, **kwargs):
+def inspect(config):
     """run reflection on target schema"""
-    print(config)
+    print(f"DEBUG: running cli.inspect with config: {config}")
+    r = Reflector(**config)
+    print(f"DEBUG: built Reflector: {r}")
+    r.reflect()
+    for table_name, table in r.tables.items():
+        print(f"Found table {table_name} with {len(table['columns'])} columns, "
+              f"{len(table['foreign_keys'])} foreign keys")
+    for view_name, view in r.views.items():
+        print(f"Found view {view_name} with {len(view['columns'])} columns")
 
 
 @reflect.command()
