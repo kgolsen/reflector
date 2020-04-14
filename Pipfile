@@ -9,6 +9,7 @@ verify_ssl = true
 sqlalchemy = "*"
 psycopg2 = "*"
 click = "*"
+openapi-core = "*"
 
 [requires]
 python_version = "3.7"
