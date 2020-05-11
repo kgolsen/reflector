@@ -3,20 +3,24 @@ from urllib.parse import quote
 
 from sqlalchemy import create_engine, inspect, Table, MetaData
 
+PRIME_ONLY = 0
+DEPENDENT_ONLY = 1
+ALL_TABLES = 2
+
 
 class Reflector:
 
     def __init__(self, *, sql_driver, host, port, user, password, database):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = quote(password, safe='')
-        self.database = database
-        self.sql_driver = sql_driver
-        self.connection_string = f"{self.sql_driver}://" \
-                                 f"{self.user}:{self.password}" \
-                                 f"@{self.host}:{self.port}/" \
-                                 f"{self.database}"
+        self._host = host
+        self._port = port
+        self._user = user
+        self._password = quote(password, safe='')
+        self._database = database
+        self._sql_driver = sql_driver
+        self._connection_string = f"{self._sql_driver}://" \
+                                 f"{self._user}:{self._password}" \
+                                 f"@{self._host}:{self._port}/" \
+                                 f"{self._database}"
         self.tables = {}
         self.views = {}
         self._init_sql()
@@ -31,7 +35,7 @@ class Reflector:
         self._init_sql()
 
     def _init_sql(self):
-        self.sql = create_engine(self.connection_string)
+        self.sql = create_engine(self._connection_string)
         self.meta = inspect(self.sql)
 
     def persist(self, file):
@@ -58,3 +62,17 @@ class Reflector:
             self.views[view] = {
                 'columns': [{'name': c.name, 'type': c.type} for c in v.columns]
             }
+
+    def get_tables(self, table_filter=ALL_TABLES):
+        for tbl_name, tbl in self.tables.items():
+            if table_filter == PRIME_ONLY:
+                if 0 != len(tbl['foreign_keys']):
+                    continue
+            if table_filter == DEPENDENT_ONLY:
+                if 0 == len(tbl['foreign_keys']):
+                    continue
+            yield tbl_name, tbl
+
+    def get_views(self):
+        for view_name, view in self.views.items():
+            yield view_name, view
