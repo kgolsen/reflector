@@ -76,3 +76,4 @@ class Reflector:
     def get_views(self):
         for view_name, view in self.views.items():
             yield view_name, view
+
